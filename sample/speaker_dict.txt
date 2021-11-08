@@ -1,0 +1,32 @@
+_speaker_dict = {
+1. 'Aibao',child female
+2. 'Aicheng',teen male
+3. 'Aida',adult male
+4. 'Aijia',adult female
+5. 'Aijing',adult female
+6. 'Aimei',teen male
+7. 'Aina',teen female
+8. 'Aiqi',teen female
+9. 'Aitong',child female
+10. 'Aiwei',child female
+11. 'Aixia',teen female
+12. 'Aiya',adult female
+13. 'Aiyu',adult female
+14. 'Aiyue',adult female
+15. 'Siyue',adult female
+16. 'Xiaobei',child female
+17. 'Xiaogang',adult female
+18. 'Xiaomei',child female
+19. 'Xiaomeng',teen female
+20. 'Xiaowei',adult female
+21. 'Xiaoxue',adult female
+22. 'Xiaoyun',adult male
+23. 'Yina',teen female
+24. 'biaobei',teen female
+25. 'cctvfa',adult female
+26. 'cctvfb',adult male
+27. 'cctvma',buggy
+28. 'cctvmb',buggy
+29. 'cctvmc',adult female
+30. 'cctvmd',buggy
+}
