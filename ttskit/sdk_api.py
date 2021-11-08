@@ -290,9 +290,9 @@ def tts_sdk(text, **kwargs):
         wav_out = wav_out + wav + sil
     out = io.BytesIO()
     wav_out.export(out, format='wav')
-    if '.wav' in kwargs:
+    if '.wav' in kwargs['output']:
         wav_out.export(kwargs['output'], format='wav')
-    elif '.mp3' in kwargs:
+    elif '.mp3' in kwargs['output']:
         wav_out.export(kwargs['output'], format='mp3')
     return out.getvalue()
 
