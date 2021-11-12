@@ -41,23 +41,23 @@ output为输出，如果以.wav结尾，则为保存语音文件的路径；如�
 '''
 ```
 """
-
 import sys
 import os
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.abspath('..'))
 
-import sdk_api
-import cli_api
-import web_api
-import http_server
-import encoder
-import mellotron
-import waveglow
-import resource
-from sdk_api import tts_sdk as tts
+from ttskit import sdk_api
+from ttskit import cli_api
+from ttskit import web_api
+from ttskit import http_server
+from ttskit import encoder
+from ttskit import mellotron
+from ttskit import waveglow
+from ttskit import melgan
+from ttskit import resource
+from ttskit.sdk_api import tts_sdk as tts
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 version_doc = """
 ### 版本
@@ -67,5 +67,5 @@ v{}
 readme_docs = [
     __doc__, version_doc,
     sdk_api.__doc__, cli_api.__doc__, web_api.__doc__, http_server.__doc__,
-    resource.__doc__, encoder.__doc__, mellotron.__doc__, waveglow.__doc__,
+    resource.__doc__, encoder.__doc__, mellotron.__doc__, waveglow.__doc__, melgan.__doc__,
 ]

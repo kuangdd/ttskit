@@ -1,0 +1,27 @@
+# apex
+aukit
+Flask
+gevent
+# inflect
+librosa
+# matplotlib
+# multiprocess
+# music21
+numpy
+phkit
+pydub
+PyYAML<=5.4.1
+requests
+scikit_learn
+scipy
+setproctitle
+# setuptools
+# tensorboardX
+# torch
+tqdm
+# umap_learn
+Unidecode
+# visdom
+# webrtcvad
+webrtcvad_wheels
+# xmltodict

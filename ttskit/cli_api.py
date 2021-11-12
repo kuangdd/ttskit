@@ -56,6 +56,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(Path(__file__).stem)
 
+import sys
+import os
+
+sys.path.append(os.path.abspath('..'))
+
 import argparse
 import json
 import numpy as np

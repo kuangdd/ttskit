@@ -42,7 +42,7 @@ output为输出，如果以.wav结尾，则为保存语音文件的路径；如�
 ```
 
 ### 版本
-v0.2.1
+v0.3.0
 
 ### sdk_api
 语音合成SDK接口。
@@ -162,8 +162,7 @@ _speaker_dict = {
     6: 'Aimei', 7: 'Aina', 8: 'Aiqi', 9: 'Aitong', 10: 'Aiwei',
     11: 'Aixia', 12: 'Aiya', 13: 'Aiyu', 14: 'Aiyue', 15: 'Siyue',
     16: 'Xiaobei', 17: 'Xiaogang', 18: 'Xiaomei', 19: 'Xiaomeng', 20: 'Xiaowei',
-    21: 'Xiaoxue', 22: 'Xiaoyun', 23: 'Yina', 24: 'biaobei', 25: 'cctvfa',
-    26: 'cctvfb', 27: 'cctvma', 28: 'cctvmb', 29: 'cctvmc', 30: 'cctvmd'
+    21: 'Xiaoxue', 22: 'Xiaoyun', 23: 'Yina', 24: 'biaobei'
 }
 ```
 
@@ -210,3 +209,11 @@ _speaker_dict = {
 - WaveGlow是一个生成模型，通过从分布采样中生成音频。
 - WaveGlow易于实施，仅使用单个网络进行训练，仅使用似然损失函数进行训练。
 - WaveGlow是兼顾生成速度快、生成质量高、稳定性强的模型。
+
+#### MelGAN声码器
+- MelGAN采用非自回归前馈卷积架构，在不引入额外蒸馏和感知损失的前提下，依然能够产生高质量的语音。
+- MelGAN是一种利用生成对抗网络（Generative Adversarial Networks，GANs）合成时域波形的方法。
+- MelGAN由于模型计算复杂度低，并行度高，因而合成速度极快。
+- MelGAN是基于GAN的生成模型，因而主要由生成器和判别器组成。
+- 生成器输入语音的压缩表示，如梅尔频谱，经过一层卷积后送入上采样层，上采样将梅尔频谱的序列长度匹配波形的频率。
+- 对于判别器，主体是由卷积层和下采样层组成，并且采用多尺度架构，也就是不但对原始音频做判别，还将降频处理之后的音频馈送到判别器中进行判断。

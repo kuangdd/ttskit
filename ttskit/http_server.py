@@ -39,10 +39,15 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(Path(__file__).stem)
 
+import sys
+import os
+
+sys.path.append(os.path.abspath('..'))
+
 from flask import Flask, request, render_template, Response
 import argparse
 from gevent import pywsgi as wsgi
-import os
+
 import yaml
 
 import ttskit.sdk_api as sdk_api
@@ -74,7 +79,7 @@ def start_sever():
             title = request.form.get('title')
             return render_template("index.html")
         content = '欢迎使用语音合成工具箱，请输入需要合成的文本。'
-        title = 'format: yaml\nmode: mspk\naudio: 14\nspeaker: Aiyue\nvocoder: griffinlim\nsigma: 1.0\ndenoiser_strength: 1.2\ngriffinlim_iters: 30\n'
+        title = 'format: yaml\nmode: mspk\naudio: 14\nspeaker: Aiyue\nvocoder: melgan\nsigma: 1.0\ndenoiser_strength: 1.2\ngriffinlim_iters: 30\n'
         return render_template("index.html", content=content, title=title)
 
     @app.route('/synthesize', methods=['GET', 'POST'])

@@ -1,7 +1,5 @@
-import sys
-sys.path.append('tacotron2')
 import torch
-from mellotron.layers import STFT
+from ttskit.mellotron.layers import STFT
 
 _device = 'cuda' if torch.cuda.is_available() else 'cpu'
 

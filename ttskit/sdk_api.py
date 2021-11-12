@@ -18,7 +18,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(Path(__file__).stem)
 
+import sys
 import os
+
+sys.path.append(os.path.abspath('..'))
+
 import argparse
 import json
 import tempfile
@@ -33,6 +37,7 @@ import tqdm
 import requests
 import pydub
 
+from ttskit.melgan import inference as melgan
 from ttskit.waveglow import inference as waveglow
 from ttskit.mellotron import inference as mellotron
 from ttskit.mellotron.layers import TacotronSTFT
@@ -55,6 +60,7 @@ _device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # 语音克隆版（rtvc）：完备（声音编码器、语音合成器、声码器、参考音频）
 _rtvc_mellotron_path = os.path.join(_home_dir, 'resource', 'model', 'mellotron.kuangdd-rtvc.pt')
 _rtvc_waveglow_path = os.path.join(_home_dir, 'resource', 'model', 'waveglow.kuangdd.pt')
+_rtvc_melgan_path = os.path.join(_home_dir, 'resource', 'model', 'melgan.kuangdd.pt')
 _rtvc_ge2e_path = os.path.join(_home_dir, 'resource', 'model', 'ge2e.kuangdd.pt')
 _rtvc_mellotron_hparams_path = os.path.join(_home_dir, 'resource', 'model', 'mellotron.kuangdd-rtvc.hparams.json')
 _rtvc_reference_audio_tar_path = os.path.join(_home_dir, 'resource', 'reference_audio.tar')
@@ -63,6 +69,7 @@ _rtvc_audio_tar_path = os.path.join(_home_dir, 'resource', 'audio.tar')
 # 语音合成版（mspk）：简要（仅需要语音合成器）
 _mellotron_path = os.path.join(_home_dir, 'resource', 'model', 'mellotron.kuangdd-mspk.pt')
 _waveglow_path = '_'
+_melgan_path = os.path.join(_home_dir, 'resource', 'model', 'melgan.kuangdd.pt')
 _ge2e_path = '_'
 _mellotron_hparams_path = os.path.join(_home_dir, 'resource', 'model', 'mellotron.kuangdd-mspk.hparams.json')
 _reference_audio_tar_path = '_'
@@ -70,6 +77,7 @@ _audio_tar_path = '_'
 
 _global_mspk_kwargs = dict(mellotron_path=_mellotron_path,
                            waveglow_path=_waveglow_path,
+                           melgan_path=_melgan_path,
                            ge2e_path=_ge2e_path,
                            mellotron_hparams_path=_mellotron_hparams_path,
                            reference_audio_tar_path=_reference_audio_tar_path,
@@ -77,6 +85,7 @@ _global_mspk_kwargs = dict(mellotron_path=_mellotron_path,
 
 _global_rtvc_kwargs = dict(mellotron_path=_rtvc_mellotron_path,
                            waveglow_path=_rtvc_waveglow_path,
+                           melgan_path=_rtvc_melgan_path,
                            ge2e_path=_rtvc_ge2e_path,
                            mellotron_hparams_path=_rtvc_mellotron_hparams_path,
                            reference_audio_tar_path=_rtvc_reference_audio_tar_path,
@@ -230,6 +239,9 @@ def load_models(mellotron_path=_mellotron_path,
         waveglow.load_waveglow_torch(waveglow_path)
         _use_waveglow = 1
 
+    if kwargs.get('melgan_path'):
+        melgan.load_melgan_torch(_melgan_path)
+
     if mellotron_path:
         mellotron.load_mellotron_torch(mellotron_path)
 
@@ -349,14 +361,17 @@ def tts_sdk_base(text, speaker='Aiyue', audio='14', output='', **kwargs):
     mels, mels_postnet, gates, alignments = mellotron.generate_mel(text_data, style_data, speaker_data, f0_data)
 
     out_gate = gates.cpu().numpy()[0]
-    end_idx = np.argmax(out_gate > kwargs.get('gate_threshold', 0.2)) or np.argmax(out_gate) or out_gate.shape[0]
+    end_idx = np.argmax(out_gate > kwargs.get('gate_threshold', 0.8)) or np.argmax(out_gate) or out_gate.shape[0]
 
     mels_postnet = mels_postnet[:, :, :end_idx]
-    vocoder_name = kwargs.get('vocoder', 'waveglow')
+    vocoder_name = kwargs.get('vocoder', 'melgan')
     if vocoder_name in {'wg', 'waveglow'}:
         wavs = waveglow.generate_wave(mel=mels_postnet,
                                       denoiser_strength=kwargs.get('denoiser_strength', 1.2),
                                       sigma=kwargs.get('sigma', 1.0))
+        wav_output = wavs.squeeze(0).cpu().numpy()
+    elif vocoder_name in {'mg', 'melgan'}:
+        wavs = melgan.generate_wave(mel=mels_postnet)
         wav_output = wavs.squeeze(0).cpu().numpy()
     else:
         wavs = _stft.griffin_lim(mels_postnet, n_iters=kwargs.get('griffinlim_iters', 30))

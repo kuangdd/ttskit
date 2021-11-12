@@ -43,8 +43,7 @@ import numpy as np
 import traceback
 
 # We're using the audio processing from TacoTron2 to make sure it matches
-sys.path.insert(0, 'tacotron2')
-from mellotron.layers import TacotronSTFT
+from ttskit.mellotron.layers import TacotronSTFT
 
 MAX_WAV_VALUE = 32768.0
 

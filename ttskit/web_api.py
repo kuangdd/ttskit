@@ -22,9 +22,14 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(Path(__file__).stem)
 
+import sys
+import os
+
+sys.path.append(os.path.abspath('..'))
+
 from flask import Flask, request, jsonify, Response
 
-import sdk_api
+import ttskit.sdk_api as sdk_api
 
 app = Flask(__name__)
 

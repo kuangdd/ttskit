@@ -29,10 +29,15 @@ import re
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(os.path.splitext(os.path.basename(__file__))[0])
-install_requires = ['aukit>=1.4.4', 'inflect', 'cycler', 'librosa', 'matplotlib>=3.1.1,<=3.4.2', 'numba==0.48', 'numpy',
-                    'phkit>=0.2.7', 'pydub', 'PyYAML', 'scikit_learn', 'scipy', 'setproctitle', 'SIP',
-                    'tensorboardX', 'torch>=1.6.0,<=1.7.1', 'tqdm', 'umap_learn', 'Unidecode', 'visdom',
-                    'webrtcvad_wheels', 'xmltodict', 'flask', 'gevent']
+
+install_requires = [line.strip() for line in open('requirements.txt', encoding='utf8')
+                    if (not line.startswith('#')) and line.strip()]
+
+# install_requires = ['aukit>=1.4.4', 'inflect', 'cycler', 'librosa', 'numpy',
+#                     'phkit>=0.2.7', 'pydub', 'PyYAML', 'scikit_learn', 'scipy', 'setproctitle', 'SIP',
+#                     'tensorboardX', 'tqdm', 'Unidecode', 'visdom',
+#                     'webrtcvad_wheels', 'xmltodict', 'flask', 'gevent']
+# 'matplotlib>=3.1.1,<=3.4.2', torch>=1.6.0,<=1.7.1, librosa, numba==0.48 'umap_learn',
 requires = [re.sub(r'[<>=].+', '', w) for w in install_requires]
 
 

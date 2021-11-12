@@ -11,22 +11,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(Path(__file__).stem)
 
 import json
-import torch
 import numpy as np
-import librosa
 import yaml
 from tqdm import tqdm
-import aukit
 import torch
-import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
 from .model import Tacotron2, load_model
 from .hparams import create_hparams, Dict2Obj
-from .data_utils import transform_mel, transform_text, transform_f0, transform_embed, transform_speaker
+# from .data_utils import transform_mel, transform_text, transform_f0, transform_embed, transform_speaker
 from .layers import TacotronSTFT
 from .data_utils import TextMelLoader, TextMelCollate
-from .plotting_utils import plot_mel_alignment_gate_audio
+# from .plotting_utils import plot_mel_alignment_gate_audio
 
 _model = None
 _device = 'cuda' if torch.cuda.is_available() else 'cpu'

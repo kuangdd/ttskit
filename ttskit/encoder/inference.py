@@ -1,10 +1,8 @@
-from encoder.params_data import *
-from encoder.model import SpeakerEncoder
-from encoder.audio import preprocess_wav  # We want to expose this function from here
-from matplotlib import cm
-from encoder import audio
+from .params_data import *
+from .model import SpeakerEncoder
+from .audio import preprocess_wav  # We want to expose this function from here
+from .audio import wav_to_mel_spectrogram
 from pathlib import Path
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
@@ -130,7 +128,7 @@ def embed_utterance(wav, using_partials=True, return_partials=False, **kwargs):
     """
     # Process the entire utterance if not using partials
     if not using_partials:
-        frames = audio.wav_to_mel_spectrogram(wav)
+        frames = wav_to_mel_spectrogram(wav)
         embed = embed_frames_batch(frames[None, ...])[0]
         if return_partials:
             return embed, None, None
@@ -143,7 +141,7 @@ def embed_utterance(wav, using_partials=True, return_partials=False, **kwargs):
         wav = np.pad(wav, (0, max_wave_length - len(wav)), "constant")
 
     # Split the utterance into partials
-    frames = audio.wav_to_mel_spectrogram(wav)
+    frames = wav_to_mel_spectrogram(wav)
     frames_batch = np.array([frames[s] for s in mel_slices])
     partial_embeds = embed_frames_batch(frames_batch)
 
@@ -161,6 +159,8 @@ def embed_speaker(wavs, **kwargs):
 
 
 def plot_embedding_as_heatmap(embed, ax=None, title="", shape=None, color_range=(0, 0.30)):
+    import matplotlib.pyplot as plt
+    from matplotlib import cm
     if ax is None:
         ax = plt.gca()
 
