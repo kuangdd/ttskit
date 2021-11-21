@@ -65,7 +65,7 @@ import argparse
 import json
 import numpy as np
 
-import ttskit.sdk_api as sdk_api
+from . import sdk_api
 
 mellotron_path = sdk_api._mellotron_path
 waveglow_path = sdk_api._waveglow_path

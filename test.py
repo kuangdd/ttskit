@@ -3,7 +3,13 @@
 # author: kuangdd
 # date: 2020/2/23
 """
+test
 """
+from pathlib import Path
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(Path(__file__).stem)
 
 
 def test_sdk_api():
@@ -35,7 +41,7 @@ def test_http_server():
 
 
 if __name__ == "__main__":
-    print(__file__)
+    logger.info(__file__)
     # test_sdk_api()
     # test_cli_api()
     # test_web_api()

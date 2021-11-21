@@ -32,6 +32,28 @@ optional arguments:
 
 + 网页界面
 ![index](ttskit/templates/index.png "index")
+
++ 注意事项
+    1. 模式mode
+        - 可选：mspk、rtvc
+        - 默认：mspk
+    2. 声码器vocoder
+        - 可选：melgan、griffinlim、waveglow
+        - 默认：melgan
+        - melgan控制参数
+            * vocoder: melgan
+        - griffinlim控制参数
+            * vocoder: griffinlim
+            * griffinlim_iters: 30
+        - waveglow控制参数
+            * vocoder: waveglow
+            * sigma: 1.0
+            * denoiser_strength: 1.2
+    3. 参考音频audio
+        - 可选：1-24的整数（内置的24个参考音频）、下划线_（）
+        - POST请求接口：可传入wav音频的base64编码的字符串。
+    4. 发音人speaker
+        - 可选：Aibao、Aicheng、Aida、Aijia、Aijing、Aimei、Aina、Aiqi、Aitong、Aiwei、Aixia、Aiya、Aiyu、Aiyue、Siyue、Xiaobei、Xiaogang、Xiaomei、Xiaomeng、Xiaowei、Xiaoxue、Xiaoyun、Yina、biaobei
 """
 from pathlib import Path
 import logging
@@ -39,18 +61,14 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(Path(__file__).stem)
 
-import sys
 import os
-
-sys.path.append(os.path.abspath('..'))
-
 from flask import Flask, request, render_template, Response
 import argparse
 from gevent import pywsgi as wsgi
 
 import yaml
 
-import ttskit.sdk_api as sdk_api
+from . import sdk_api
 
 
 def set_args():
@@ -79,7 +97,7 @@ def start_sever():
             title = request.form.get('title')
             return render_template("index.html")
         content = '欢迎使用语音合成工具箱，请输入需要合成的文本。'
-        title = 'format: yaml\nmode: mspk\naudio: 14\nspeaker: Aiyue\nvocoder: melgan\nsigma: 1.0\ndenoiser_strength: 1.2\ngriffinlim_iters: 30\n'
+        title = 'format: yaml\nmode: mspk\naudio: 14\nspeaker: Aiyue\nvocoder: melgan\n'
         return render_template("index.html", content=content, title=title)
 
     @app.route('/synthesize', methods=['GET', 'POST'])

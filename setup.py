@@ -70,6 +70,7 @@ setup(
     package_data={
         'ttskit': ['requirements.txt', 'README.md'],
         'ttskit.templates': ['index.html', 'index.png'],
+        'ttskit.resource.model': ['*.json', '*.pt'],
     },  # 包数据，通常是与软件包实现密切相关的数据
     # include_package_data=True,
     classifiers=[

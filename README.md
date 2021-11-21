@@ -42,7 +42,7 @@ output为输出，如果以.wav结尾，则为保存语音文件的路径；如�
 ```
 
 ### 版本
-v0.3.0
+v0.3.2
 
 ### sdk_api
 语音合成SDK接口。
@@ -146,6 +146,28 @@ optional arguments:
 
 + 网页界面
 ![index](ttskit/templates/index.png "index")
+
++ 注意事项
+    1. 模式mode
+        - 可选：mspk、rtvc
+        - 默认：mspk
+    2. 声码器vocoder
+        - 可选：melgan、griffinlim、waveglow
+        - 默认：melgan
+        - melgan控制参数
+            * vocoder: melgan
+        - griffinlim控制参数
+            * vocoder: griffinlim
+            * griffinlim_iters: 30
+        - waveglow控制参数
+            * vocoder: waveglow
+            * sigma: 1.0
+            * denoiser_strength: 1.2
+    3. 参考音频audio
+        - 可选：1-24的整数（内置的24个参考音频）、下划线_（）
+        - POST请求接口：可传入wav音频的base64编码的字符串。
+    4. 发音人speaker
+        - 可选：Aibao、Aicheng、Aida、Aijia、Aijing、Aimei、Aina、Aiqi、Aitong、Aiwei、Aixia、Aiya、Aiyu、Aiyue、Siyue、Xiaobei、Xiaogang、Xiaomei、Xiaomeng、Xiaowei、Xiaoxue、Xiaoyun、Yina、biaobei
 
 ### resource
 模型数据等资源。

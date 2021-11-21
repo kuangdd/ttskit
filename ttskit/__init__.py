@@ -41,23 +41,18 @@ output为输出，如果以.wav结尾，则为保存语音文件的路径；如�
 '''
 ```
 """
-import sys
-import os
+from . import sdk_api
+from . import cli_api
+from . import web_api
+from . import http_server
+from . import encoder
+from . import mellotron
+from . import waveglow
+from . import melgan
+from . import resource
+from .sdk_api import tts_sdk as tts
 
-sys.path.append(os.path.abspath('..'))
-
-from ttskit import sdk_api
-from ttskit import cli_api
-from ttskit import web_api
-from ttskit import http_server
-from ttskit import encoder
-from ttskit import mellotron
-from ttskit import waveglow
-from ttskit import melgan
-from ttskit import resource
-from ttskit.sdk_api import tts_sdk as tts
-
-__version__ = "0.3.0"
+__version__ = "0.3.2"
 
 version_doc = """
 ### 版本

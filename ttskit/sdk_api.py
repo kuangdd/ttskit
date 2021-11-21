@@ -37,13 +37,13 @@ import tqdm
 import requests
 import pydub
 
-from ttskit.melgan import inference as melgan
-from ttskit.waveglow import inference as waveglow
-from ttskit.mellotron import inference as mellotron
-from ttskit.mellotron.layers import TacotronSTFT
-from ttskit.mellotron.hparams import create_hparams
+from .melgan import inference as melgan
+from .waveglow import inference as waveglow
+from .mellotron import inference as mellotron
+from .mellotron.layers import TacotronSTFT
+from .mellotron.hparams import create_hparams
 
-from ttskit.resource import _speaker_dict
+from .resource import _speaker_dict
 
 _home_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -373,9 +373,12 @@ def tts_sdk_base(text, speaker='Aiyue', audio='14', output='', **kwargs):
     elif vocoder_name in {'mg', 'melgan'}:
         wavs = melgan.generate_wave(mel=mels_postnet)
         wav_output = wavs.squeeze(0).cpu().numpy()
-    else:
+    elif vocoder_name in {'gf', 'griffinlim'}:
         wavs = _stft.griffin_lim(mels_postnet, n_iters=kwargs.get('griffinlim_iters', 30))
         wav_output = wavs[0]
+    else:
+        wavs = melgan.generate_wave(mel=mels_postnet)
+        wav_output = wavs.squeeze(0).cpu().numpy()
 
     if output.startswith('play'):
         aukit.play_sound(wav_output, sr=_stft.sampling_rate)

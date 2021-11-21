@@ -8,6 +8,7 @@ mellotron.kuangdd-rtvc.hparams.json
 mellotron.kuangdd-mspk.pt
 mellotron.kuangdd-mspk.hparams.json
 waveglow.kuangdd.pt
+melgan.kuangdd.pt
 """
 from pathlib import Path
 import logging
