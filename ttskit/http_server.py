@@ -62,13 +62,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(Path(__file__).stem)
 
 import os
+from multiprocessing import Process
 from flask import Flask, request, render_template, Response
 import argparse
 from gevent import pywsgi as wsgi
 
 import yaml
 
-from . import sdk_api
+from ttskit import sdk_api
 
 
 def set_args():
@@ -77,6 +78,7 @@ def set_args():
     parser.add_argument('--device', default='0', type=str, help='设置预测时使用的显卡,使用CPU设置成-1即可')
     parser.add_argument('--host', type=str, default="0.0.0.0", help='IP地址')
     parser.add_argument('--port', type=int, default=9000, help='端口号')
+    parser.add_argument('--processes', type=int, default=1, help='进程数')
     return parser.parse_args()
 
 
@@ -111,8 +113,21 @@ def start_sever():
 
     logger.info(f'Http server: http://{args.host}:{args.port}/ttskit'.replace('0.0.0.0', 'localhost'))
     server = wsgi.WSGIServer((args.host, args.port), app)
-    server.serve_forever()
+    if args.processes == 1:
+        server.serve_forever()
+    return server
+
+
+def serve_forever(server):
+    server.start_accepting()
+    server._stop_event.wait()
 
 
 if __name__ == '__main__':
-    start_sever()
+    server = start_sever()
+    # 单进程
+    # server.serve_forever()
+    # 多进程
+    server.start()
+    for i in range(6):
+        Process(target=serve_forever, args=(server,)).start()

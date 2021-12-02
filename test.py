@@ -28,15 +28,23 @@ def test_cli_api():
 def test_web_api():
     from ttskit import web_api
 
-    web_api.app.run(host='0.0.0.0', port=2718, debug=False)
+    web_api.app.run(host='0.0.0.0', port=2718, debug=False, processes=6, threaded=False)
     # 用POST或GET方法请求：http://localhost:2718/tts，传入参数text、audio、speaker。
     # 例如GET方法请求：http://localhost:2718/tts?text=这是个例子&audio=2
 
 
 def test_http_server():
     from ttskit import http_server
+    from multiprocessing import Process
 
-    http_server.start_sever()
+    server = http_server.start_sever()
+    # 单进程
+    # server.serve_forever()
+    # 多进程
+    server.start()
+    for i in range(6):
+        p = Process(target=http_server.serve_forever, args=(server,))
+        p.start()
     # 打开网页：http://localhost:9000/ttskit
 
 
