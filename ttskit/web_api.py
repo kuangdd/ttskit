@@ -53,4 +53,4 @@ def tts_web():
 
 if __name__ == "__main__":
     logger.info(__file__)
-    app.run(host='0.0.0.0', port=9010, debug=False, processes=6, threaded=False)
+    app.run(host='0.0.0.0', port=9010, debug=False, processes=1, threaded=True)

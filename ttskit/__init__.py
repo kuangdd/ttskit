@@ -52,7 +52,7 @@ from . import melgan
 from . import resource
 from .sdk_api import tts_sdk as tts
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 version_doc = """
 ### 版本

@@ -69,13 +69,11 @@ from gevent import pywsgi as wsgi
 
 import yaml
 
-from ttskit import sdk_api
-
 
 def set_args():
     """设置所需参数"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('--device', default='0', type=str, help='设置预测时使用的显卡,使用CPU设置成-1即可')
+    parser.add_argument('--device', default='_', type=str, help='设置预测时使用的显卡,使用CPU设置成_即可')
     parser.add_argument('--host', type=str, default="0.0.0.0", help='IP地址')
     parser.add_argument('--port', type=int, default=9000, help='端口号')
     parser.add_argument('--processes', type=int, default=1, help='进程数')
@@ -85,7 +83,14 @@ def set_args():
 def start_sever():
     """部署网页服务。"""
     args = set_args()
-    os.environ["CUDA_VISIBLE_DEVICE"] = args.device
+    os.environ["CUDA_VISIBLE_DEVICES"] = '-1' if args.device in {'_', '-1'} else args.device
+
+    from gevent import monkey
+
+    monkey.patch_all()
+
+    from . import sdk_api
+
     app = Flask(__name__)
 
     @app.route('/')
@@ -113,8 +118,20 @@ def start_sever():
 
     logger.info(f'Http server: http://{args.host}:{args.port}/ttskit'.replace('0.0.0.0', 'localhost'))
     server = wsgi.WSGIServer((args.host, args.port), app)
+
+    def serve_forever(server):
+        server.start_accepting()
+        server._stop_event.wait()
+
     if args.processes == 1:
         server.serve_forever()
+    elif args.processes >= 2:
+        server.start()
+        for i in range(args.processes):
+            p = Process(target=serve_forever, args=(server,))
+            p.start()
+    else:
+        logger.info('Please start http server!')
     return server
 
 
@@ -128,6 +145,8 @@ if __name__ == '__main__':
     # 单进程
     # server.serve_forever()
     # 多进程
-    server.start()
-    for i in range(6):
-        Process(target=serve_forever, args=(server,)).start()
+    # server.start()
+    # for i in range(6):
+    #     # Process(target=serve_forever, args=(server,)).start()
+    #     p = Process(target=serve_forever, args=(server,))
+    #     p.start()

@@ -327,7 +327,7 @@ def tts_sdk_base(text, speaker='Aiyue', audio='14', output='', **kwargs):
     else:
         current_kwargs = {**_global_kwargs, **{k: v for k, v in kwargs.items() if k in _global_kwargs}}
 
-    vocoder_name = kwargs.get('vocoder', 'waveglow')
+    vocoder_name = kwargs.get('vocoder', 'melgan')
 
     if (vocoder_name in {'waveglow', 'wg'}) and (current_kwargs['waveglow_path'] == '_'):
         current_kwargs['waveglow_path'] = _global_rtvc_kwargs['waveglow_path']
