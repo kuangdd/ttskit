@@ -61,6 +61,13 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(Path(__file__).stem)
 
+import sys
+
+if not sys.platform.startswith('win'):
+    from gevent import monkey
+
+    monkey.patch_all()
+
 import os
 from multiprocessing import Process
 from flask import Flask, request, render_template, Response
@@ -83,11 +90,7 @@ def set_args():
 def start_sever():
     """部署网页服务。"""
     args = set_args()
-    os.environ["CUDA_VISIBLE_DEVICES"] = '-1' if args.device in {'_', '-1'} else args.device
-
-    from gevent import monkey
-
-    monkey.patch_all()
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.device
 
     from . import sdk_api
 
@@ -113,6 +116,7 @@ def start_sever():
             text = request.args.get('text')
             kwargs_str = request.args.get('kwargs')
             kwargs = yaml.load(kwargs_str)
+            # kwargs['processes'] = 1
             wav = sdk_api.tts_sdk(text=text, **kwargs)
             return Response(wav, mimetype='audio/wav')
 

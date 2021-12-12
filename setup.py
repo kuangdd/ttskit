@@ -42,7 +42,26 @@ requires = [re.sub(r'[<>=].+', '', w) for w in install_requires]
 
 
 def create_readme():
-    from ttskit import readme_docs
+    from ttskit import sdk_api
+    from ttskit import cli_api
+    from ttskit import web_api
+    from ttskit import http_server
+    from ttskit import encoder
+    from ttskit import mellotron
+    from ttskit import waveglow
+    from ttskit import melgan
+    from ttskit import resource
+    import ttskit
+    version_doc = """
+    ### 版本
+    v{}
+    """.format(ttskit.__version__)
+    readme_docs = [
+        ttskit.__doc__, version_doc,
+        sdk_api.__doc__, cli_api.__doc__, web_api.__doc__, http_server.__doc__,
+        resource.__doc__, encoder.__doc__, mellotron.__doc__, waveglow.__doc__, melgan.__doc__,
+    ]
+
     docs = []
     with open("README.md", "wt", encoding="utf8") as fout:
         for doc in readme_docs:

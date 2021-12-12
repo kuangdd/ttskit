@@ -36,6 +36,9 @@ import aukit
 import tqdm
 import requests
 import pydub
+import functools
+import multiprocessing as mp
+import time
 
 from .melgan import inference as melgan
 from .waveglow import inference as waveglow
@@ -286,7 +289,7 @@ def split_text(text, maxlen=30):
     return out
 
 
-def tts_sdk(text, **kwargs):
+def tts_sdk_for(text, **kwargs):
     """长文本的语音合成，包含简单分句模块。"""
     text_split_lst = split_text(text, kwargs.get('maxlen', 30))
     wav_lst = []
@@ -386,6 +389,67 @@ def tts_sdk_base(text, speaker='Aiyue', audio='14', output='', **kwargs):
         aukit.save_wav(wav_output, output, sr=_stft.sampling_rate)
     wav_output = aukit.anything2bytes(wav_output, sr=_stft.sampling_rate)
     return wav_output
+
+
+def tts_sdk_base_one(kwargs):
+    return tts_sdk_base(**kwargs)
+
+
+tts_sdk_base_func = functools.partial(tts_sdk_base_one)
+
+
+def tts_sdk(text, **kwargs):
+    """长文本的语音合成，包含简单分句模块。"""
+    t0 = time.time()
+    text_split_lst = split_text(text, kwargs.get('maxlen', 30))
+
+    kw_lst = []
+    for text_split in text_split_lst:
+        kw = {**kwargs}
+        kw['text'] = text_split
+        kw_lst.append(kw)
+
+    wav_lst = []
+    processes = kwargs.get('processes', 1)
+    if processes >= 2:
+        # 多进程
+        with mp.Pool(processes) as pool:
+            job = pool.imap(tts_sdk_base_func, kw_lst)
+            for num, wav in enumerate(job):
+                logger.info(f'Synthesizing: {kw_lst[num]["text"]}')
+                wav_lst.append(wav)
+    elif processes == 1:
+        # 单进程
+        for num, kw in enumerate(kw_lst):
+            logger.info(f'Synthesizing: {kw["text"]}')
+            wav = tts_sdk_base_one(kw)
+            wav_lst.append(wav)
+    else:
+        import threadpool
+
+        pool = threadpool.ThreadPool(3)
+        requests = threadpool.makeRequests(tts_sdk_base_one, kw_lst)
+        wav_lst = [pool.putRequest(req) for req in requests]
+
+    sr = kwargs.get('sampling_rate', 22050)
+    sil = pydub.AudioSegment.silent(300, frame_rate=sr)
+    wav_out = sil
+    for wav in wav_lst:
+        wav = pydub.AudioSegment(wav)
+        wav_out = wav_out + wav + sil
+    out = io.BytesIO()
+    wav_out.export(out, format='wav')
+    wav = out.getvalue()
+    t1 = time.time()
+    tc = t1 - t0
+    ad = len(wav) / (2 * sr)
+    rtf = (t1 - t0) / (len(wav) / (2 * sr))
+    cps = len(text) / (t1 - t0)
+
+    logger.info(
+        f'processes: {processes}, cuda: {torch.cuda.is_available()}, device: {os.environ.get("CUDA_VISIBLE_DEVICES")}, '
+        f'time consumed: {tc:.2f}s, text length: {len(text)}, audio duration: {ad:.2f}s, RTF: {rtf:.4f}, CPS: {cps:.4f}')
+    return wav
 
 
 # load_audio()

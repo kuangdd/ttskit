@@ -18,35 +18,35 @@ import os
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--checkpoint_path', type=str,
-                        default=r"../models/mellotron/samples/checkpoint/mellotron-000000.pt",
+                        default=r"workplace/mellotron-mspk-samples/checkpoint/mellotron-000000.pt",
                         help='模型路径。')
     parser.add_argument('--is_simple', type=int, default=1,
                         help='是否简易模式。')
     parser.add_argument('-s', '--speaker_path', type=str,
-                        default=r"../models/mellotron/samples/metadata/speakers.json",
+                        default=r"workplace/mellotron-mspk-samples/metadata/speakers.json",
                         help='发音人映射表路径。')
     parser.add_argument('-a', '--audio_path', type=str,
                         default=r"../data/samples/wav",
                         help='参考音频路径。')
     parser.add_argument('-t', '--text_path', type=str,
-                        default=r"../models/mellotron/samples/metadata/validation.txt",
+                        default=r"workplace/mellotron-mspk-samples/metadata/validation.txt",
                         help='文本路径。')
-    parser.add_argument("-o", "--out_dir", type=Path, default=r"../models/mellotron/samples/test/mellotron-000000",
+    parser.add_argument("-o", "--out_dir", type=Path, default=r"workplace/mellotron-mspk-samples/test/mellotron-000000",
                         help='保存合成的数据路径。')
     parser.add_argument("-p", "--play", type=int, default=0,
                         help='是否合成语音后自动播放语音。')
     parser.add_argument('--n_gpus', type=int, default=1,
                         required=False, help='number of gpus')
     parser.add_argument('--hparams_path', type=str,
-                        default=r"../models/mellotron/samples/metadata/hparams.json",
+                        default=r"workplace/mellotron-mspk-samples/metadata/hparams.json",
                         required=False, help='comma separated name=value pairs')
     parser.add_argument("-e", "--encoder_model_fpath", type=Path,
                         default=r"../models/encoder/saved_models/ge2e_pretrained.pt",
                         help="Path your trained encoder model.")
     parser.add_argument("--save_model_path", type=str,
-                        default=r"../models/mellotron/samples/mellotron-000000.samples.pt",
+                        default=r"workplace/mellotron-mspk-samples/mellotron-000000.samples.pt",
                         help='保存模型为可以直接torch.load的格式')
-    parser.add_argument("--cuda", type=str, default='-1',
+    parser.add_argument("--cuda", type=str, default='0',
                         help='设置CUDA_VISIBLE_DEVICES')
     args = parser.parse_args()
     return args
@@ -69,10 +69,11 @@ import yaml
 import unidecode
 from tqdm import tqdm
 
-from mellotron.inference import MellotronSynthesizer
-from mellotron.inference import save_model
-from utils.texthelper import xinqing_texts
-from utils.argutils import locals2dict
+from ttskit.mellotron.inference import MellotronSynthesizer
+from ttskit.mellotron.inference import save_model
+
+# from ttskit.utils.texthelper import xinqing_texts
+# from ttskit.utils.argutils import locals2dict
 
 filename_formatter_re = re.compile(r'[\s\\/:*?"<>|\']+')
 
@@ -104,6 +105,12 @@ def plot_mel_alignment_gate_audio(mel, alignment, gate, audio, figsize=(16, 16))
     axes[3].set_title("audio")
 
     plt.tight_layout()
+
+
+def locals2dict(locals_dict):
+    obj = {k: (str(v) if isinstance(v, Path) else v)
+           for k, v in locals_dict.items() if isinstance(v, (int, float, str, Path, bool))}
+    return obj
 
 
 if __name__ == "__main__":
@@ -163,7 +170,7 @@ if __name__ == "__main__":
         example_speaker_list = [w.split('\t')[2] for w in convert_input(audio_path)]
     else:
         example_audio_list = [w.split('\t')[0] for w in convert_input(audio_path)]
-        example_text_list = xinqing_texts
+        example_text_list = ['你好，欢迎使用语言合成服务。']
         example_speaker_list = speaker_name_list
 
     example_audio_list = np.random.choice(example_audio_list, 10)
@@ -177,7 +184,7 @@ if __name__ == "__main__":
     print("Spectrogram shape: {}".format(spec.shape))
     # print("Alignment shape: {}".format(align.shape))
     wav_inputs = msyner.stft.griffin_lim(torch.from_numpy(spec[None]))
-    wav = wav_inputs[0].cpu().numpy()
+    wav = wav_inputs[0]  # .cpu().numpy()
     print("Waveform shape: {}".format(wav.shape))
 
     print("All test passed! You can now synthesize speech.\n\n")
@@ -206,8 +213,8 @@ if __name__ == "__main__":
     mels, mels_postnet, gates, alignments = msyner.synthesize_batch()
     texts = msyner.texts
     for num in tqdm(list(range(len(mels_postnet))), 'griffinlim', ncols=100):
-    # for num, (text, speaker, audio) in enumerate(tqdm(zip(example_text_list, example_speaker_list, example_audio_list),
-    #                                                   'mellotron-inference', ncols=100)):
+        # for num, (text, speaker, audio) in enumerate(tqdm(zip(example_text_list, example_speaker_list, example_audio_list),
+        #                                                   'mellotron-inference', ncols=100)):
         try:
             spec, align, gate = mels_postnet[num], alignments[num], gates[num]
             audio, text, speaker = texts[num].split('\t')
@@ -225,9 +232,9 @@ if __name__ == "__main__":
 
             ## Generating the waveform
             # print("Synthesizing the waveform ...")
-
+            # todo 默认用griffinlim声码器转为声音波形，能测评合成频谱效果，但音质较差，改为melgan声码器。
             wav_outputs = msyner.stft.griffin_lim(torch.from_numpy(spec[None]), n_iters=5)
-            wav_output = wav_outputs[0].cpu().numpy()
+            wav_output = wav_outputs[0]#.cpu().numpy()
 
             # print("Waveform shape: {}".format(wav.shape))
 

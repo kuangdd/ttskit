@@ -66,12 +66,16 @@ class TacotronSTFT(torch.nn.Module):
             sampling_rate, filter_length, n_mel_channels, mel_fmin, mel_fmax)
         mel_basis = torch.from_numpy(mel_basis).float()
         self.register_buffer('mel_basis', mel_basis)
-        griffinlim_mel = lambda x, n_iters: librosa.feature.inverse.mel_to_audio(
-            np.exp(x), sr=sampling_rate, n_fft=filter_length, hop_length=hop_length, win_length=win_length,
-            fmin=mel_fmin, fmax=mel_fmax, power=1, n_iter=n_iters, center=True)
-        self.griffinlim_mel = griffinlim_mel
         self.denoiser = None
         self.denoiser_mode = ''
+        self.mel_fmin = mel_fmin
+        self.mel_fmax = mel_fmax
+
+    def griffinlim_mel(self, x, n_iters=10):
+        return librosa.feature.inverse.mel_to_audio(
+            np.exp(x), sr=self.sampling_rate,
+            n_fft=self.stft_fn.filter_length, hop_length=self.stft_fn.hop_length, win_length=self.stft_fn.win_length,
+            fmin=self.mel_fmin, fmax=self.mel_fmax, power=1, n_iter=n_iters, center=True)
 
     def create_denoiser(self, vocoder=None, mode='zeros'):
         voc = vocoder or self.griffin_lim_

@@ -2,12 +2,14 @@ import sys
 import os
 import argparse
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input_directory', type=str, default=r'../data/samples/metadata.csv',
+    parser.add_argument('-i', '--input_directory', type=str, default=r'workplace/samples/metadata.csv',
                         help='directory to save checkpoints')
-    parser.add_argument('-o', '--output_directory', type=str, default=r"../models/mellotron/samples",
+    parser.add_argument('-o', '--output_directory', type=str, default=r"workplace/mellotron-mspk-samples",
                         help='directory to save checkpoints')
     parser.add_argument('-l', '--log_directory', type=str, default='tensorboard',
                         help='directory to save tensorboard logs')
@@ -22,7 +24,7 @@ def parse_args():
     parser.add_argument('--group_name', type=str, default='group_name',
                         required=False, help='Distributed group name')
     parser.add_argument('--hparams_json', type=str,
-                        default='{"batch_size":4,"iters_per_checkpoint":100,"learning_rate":0.001,"dataloader_num_workers":0}',
+                        default='{"batch_size":4,"iters_per_checkpoint":100,"learning_rate":0.0001,"dataloader_num_workers":0}',
                         required=False, help='comma separated name=value pairs')
     parser.add_argument('--hparams_level', type=int, default=2,
                         required=False, help='hparams scale')
@@ -41,14 +43,14 @@ os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda
 import yaml
 import torch
 
-from mellotron.hparams import create_hparams
-from mellotron.train import train, json_dump, yaml_dump
+from ttskit.mellotron.hparams import create_hparams
+from ttskit.mellotron.train import train, json_dump, yaml_dump
 
 if __name__ == '__main__':
     try:
         from setproctitle import setproctitle
 
-        setproctitle('zhrtvc-mellotron-train')
+        setproctitle('ttskit-mellotron-train')
     except ImportError:
         pass
 

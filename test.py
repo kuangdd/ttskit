@@ -13,9 +13,16 @@ logger = logging.getLogger(Path(__file__).stem)
 
 
 def test_sdk_api():
-    from ttskit import sdk_api
+    import os
 
-    wav = sdk_api.tts_sdk('文本', audio='24')
+    os.environ['CUDA_VISIBLE_DEVICES'] = '_'
+
+    from ttskit import sdk_api
+    text = '初始化。'
+    wav = sdk_api.tts_sdk(text, audio='24', processes=0)
+
+    text = '欢迎使用语音合成工具箱这是二十个字的文本。' * 5
+    wav = sdk_api.tts_sdk(text, audio='24', processes=0)
 
 
 def test_cli_api():
@@ -53,4 +60,20 @@ if __name__ == "__main__":
     # test_sdk_api()
     # test_cli_api()
     # test_web_api()
-    test_http_server()
+    # test_http_server()
+    import time
+    import threadpool
+    def sayhello(str):
+        print("Hello ",str)
+        time.sleep(2)
+        return 'hello'
+
+    name_list =['xiaozi','aa','bb','cc']
+    start_time = time.time()
+    pool = threadpool.ThreadPool(10)
+    requests = threadpool.makeRequests(sayhello, name_list)
+    out = [pool.putRequest(req) for req in requests]
+    print([req.args for req in requests])
+    print(out, requests)
+    pool.wait()
+    print('%d second'% (time.time()-start_time))

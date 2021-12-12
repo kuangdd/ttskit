@@ -41,26 +41,5 @@ output为输出，如果以.wav结尾，则为保存语音文件的路径；如�
 '''
 ```
 """
-from . import sdk_api
-from . import cli_api
-from . import web_api
-from . import http_server
-from . import encoder
-from . import mellotron
-from . import waveglow
-from . import melgan
-from . import resource
-from .sdk_api import tts_sdk as tts
 
-__version__ = "0.3.4"
-
-version_doc = """
-### 版本
-v{}
-""".format(__version__)
-
-readme_docs = [
-    __doc__, version_doc,
-    sdk_api.__doc__, cli_api.__doc__, web_api.__doc__, http_server.__doc__,
-    resource.__doc__, encoder.__doc__, mellotron.__doc__, waveglow.__doc__, melgan.__doc__,
-]
+__version__ = "0.3.6"

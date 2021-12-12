@@ -1,12 +1,14 @@
 # author: kuangdd
 # date: 2021/4/25
 """
-### resource
-模型数据等资源。
+### trainer
+训练模型的模块。
 
-audio
-model
-reference_audio
+#### 使用方法
+```
+from ttskit.trainer import mellotron_train as mttr
+mttr.train()
+```
 """
 from pathlib import Path
 import logging

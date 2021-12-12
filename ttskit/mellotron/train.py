@@ -146,7 +146,8 @@ def validate(model, criterion, valset, iteration, batch_size, n_gpus,
     model.eval()
     with torch.no_grad():
         val_sampler = DistributedSampler(valset) if distributed_run else None
-        val_loader = DataLoader(valset, sampler=val_sampler, num_workers=1,
+        # fixme num_workers>=1则EOFError: Ran out of input，mp.spawn的报错。
+        val_loader = DataLoader(valset, sampler=val_sampler, num_workers=0,
                                 shuffle=True, batch_size=batch_size,
                                 pin_memory=False, collate_fn=collate_fn)  # shuffle=False,
 
@@ -182,7 +183,7 @@ def validate(model, criterion, valset, iteration, batch_size, n_gpus,
                 end_idx = np.argmax(gate_output > 0.5) or gate_output.shape[0]
                 mel = mel_outputs_postnet[idx][:, :end_idx].unsqueeze(0)
                 wav_outputs = valset.stft.griffin_lim(mel)
-                wav_output = wav_outputs[0].cpu().numpy()
+                wav_output = wav_outputs[0]  # .cpu().numpy()
                 aukit.save_wav(wav_output, curdir.joinpath('griffinlim_pred.wav'), sr=hparams.sampling_rate)
 
                 mel_targets = y[0]
@@ -191,7 +192,7 @@ def validate(model, criterion, valset, iteration, batch_size, n_gpus,
                 end_idx = np.argmax(gate_target > 0.5) or gate_target.shape[0]
                 mel = mel_targets[idx][:, :end_idx].unsqueeze(0)
                 wav_inputs = valset.stft.griffin_lim(mel)
-                wav_input = wav_inputs[0].cpu().numpy()
+                wav_input = wav_inputs[0]  # .cpu().numpy()
                 aukit.save_wav(wav_input, curdir.joinpath('griffinlim_true.wav'), sr=hparams.sampling_rate)
 
                 plot_mel_alignment_gate_audio(target=mel_targets[idx].cpu().numpy(),

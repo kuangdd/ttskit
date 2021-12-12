@@ -90,7 +90,8 @@ def generate_mel_batch(model, inpath, batch_size, hparams, **kwargs):
     with torch.no_grad():
         valset = TextMelLoader(inpath, hparams, speaker_ids={}, mode=hparams.train_mode)
         collate_fn = TextMelCollate(n_frames_per_step=hparams.n_frames_per_step, mode='val')
-        val_loader = DataLoader(valset, sampler=None, num_workers=1,
+        # fixme num_workers>=1则EOFError: Ran out of input，mp.spawn的报错。
+        val_loader = DataLoader(valset, sampler=None, num_workers=0,
                                 shuffle=False, batch_size=batch_size,
                                 pin_memory=False, drop_last=False, collate_fn=collate_fn)
         mels, mels_postnet, gates, alignments = [], [], [], []
