@@ -7,7 +7,7 @@ def validate(hp, args, generator, discriminator, valloader, writer, step):
     discriminator.eval()
     torch.backends.cudnn.benchmark = False
 
-    loader = tqdm.tqdm(valloader, desc='Validation loop')
+    loader = tqdm.tqdm(valloader, desc='Validation loop', ncols=100)
     loss_g_sum = 0.0
     loss_d_sum = 0.0
     for mel, audio in loader:

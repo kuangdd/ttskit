@@ -14,7 +14,7 @@ def load_hparam_str(hp_str):
 
 
 def load_hparam(filename):
-    stream = open(filename, 'r')
+    stream = open(filename, 'r', encoding='utf8')
     docs = yaml.load_all(stream, Loader=yaml.Loader)
     hparam_dict = dict()
     for doc in docs:
@@ -55,7 +55,7 @@ class Dotdict(dict):
 
 class HParam(Dotdict):
 
-    def __init__(self, file):
+    def __init__(self, file) -> object:
         super(Dotdict, self).__init__()
         hp_dict = load_hparam(file)
         hp_dotdict = Dotdict(hp_dict)

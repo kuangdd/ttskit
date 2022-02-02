@@ -424,12 +424,6 @@ def tts_sdk(text, **kwargs):
             logger.info(f'Synthesizing: {kw["text"]}')
             wav = tts_sdk_base_one(kw)
             wav_lst.append(wav)
-    else:
-        import threadpool
-
-        pool = threadpool.ThreadPool(3)
-        requests = threadpool.makeRequests(tts_sdk_base_one, kw_lst)
-        wav_lst = [pool.putRequest(req) for req in requests]
 
     sr = kwargs.get('sampling_rate', 22050)
     sil = pydub.AudioSegment.silent(300, frame_rate=sr)

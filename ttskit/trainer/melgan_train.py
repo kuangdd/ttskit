@@ -2,24 +2,27 @@ import os
 import time
 import logging
 import argparse
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from utils.train import train
-from utils.hparams import HParam
-from utils.writer import MyWriter
-from datasets.dataloader import create_dataloader
+from ttskit.melgan.utils.train import train
+from ttskit.melgan.utils.hparams import HParam
+from ttskit.melgan.utils.writer import MyWriter
+from ttskit.melgan.datasets.dataloader import create_dataloader
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', type=str, required=True,
+    parser.add_argument('-c', '--config', type=str,
+                        default=os.path.join(os.path.dirname(__file__), 'melgan_config.yaml'),
                         help="yaml file for configuration")
     parser.add_argument('-p', '--checkpoint_path', type=str, default=None,
                         help="path of checkpoint pt file to resume training")
-    parser.add_argument('-n', '--name', type=str, required=True,
+    parser.add_argument('-n', '--name', type=str, default='workplace/melgan-samples',
                         help="name of the model for logging, saving checkpoint")
     args = parser.parse_args()
 
     hp = HParam(args.config)
-    with open(args.config, 'r') as f:
+    with open(args.config, 'r', encoding='utf8') as f:
         hp_str = ''.join(f.readlines())
 
     pt_dir = os.path.join(args.name, hp.log.chkpt_dir)

@@ -5,7 +5,8 @@ import random
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
-from utils.utils import read_wav_np
+from ..utils.utils import read_wav_np, load_wav
+from ..utils.stft import TacotronSTFT
 
 
 def create_dataloader(hp, args, train):
@@ -13,10 +14,12 @@ def create_dataloader(hp, args, train):
 
     if train:
         return DataLoader(dataset=dataset, batch_size=hp.train.batch_size, shuffle=True,
-            num_workers=hp.train.num_workers, pin_memory=True, drop_last=True)
+                          num_workers=hp.train.num_workers, pin_memory=True, drop_last=True)
     else:
+        # 随机选一个batch即可
+        dataset.wav_list = np.random.choice(dataset.wav_list, hp.train.batch_size)
         return DataLoader(dataset=dataset, batch_size=1, shuffle=False,
-            num_workers=hp.train.num_workers, pin_memory=True, drop_last=False)
+                          num_workers=hp.train.num_workers, pin_memory=True, drop_last=False)
 
 
 class MelFromDisk(Dataset):
@@ -25,9 +28,30 @@ class MelFromDisk(Dataset):
         self.args = args
         self.train = train
         self.path = hp.data.train if train else hp.data.validation
-        self.wav_list = glob.glob(os.path.join(self.path, '**', '*.wav'), recursive=True)
+        # self.wav_list = glob.glob(os.path.join(self.path, '**', '*.wav'), recursive=True)
+        self.load_data()
         self.mel_segment_length = hp.audio.segment_length // hp.audio.hop_length + 2
         self.mapping = [i for i in range(len(self.wav_list))]
+        self.stft = TacotronSTFT(filter_length=hp.audio.filter_length,
+                                 hop_length=hp.audio.hop_length,
+                                 win_length=hp.audio.win_length,
+                                 n_mel_channels=hp.audio.n_mel_channels,
+                                 sampling_rate=hp.audio.sampling_rate,
+                                 mel_fmin=hp.audio.mel_fmin,
+                                 mel_fmax=hp.audio.mel_fmax)
+
+    def load_data(self):
+        """导入语音数据。"""
+        curdir = os.path.dirname(os.path.abspath(self.path))
+        filepaths = []
+        with open(self.path, encoding='utf-8') as f:
+            for line in f:
+                tmp = line.strip().split('\t')
+                if len(tmp) == 2:
+                    tmp.append('0')
+                fpath = os.path.join(curdir, tmp[0])
+                filepaths.append(fpath)
+        self.wav_list = filepaths
 
     def __len__(self):
         return len(self.wav_list)
@@ -45,14 +69,16 @@ class MelFromDisk(Dataset):
 
     def my_getitem(self, idx):
         wavpath = self.wav_list[idx]
-        melpath = wavpath.replace('.wav', '.mel')
-        sr, audio = read_wav_np(wavpath)
+        # melpath = wavpath.replace('.wav', '.mel')
+        # sr, audio = read_wav_np(wavpath)
+        sr, audio = load_wav(wavpath, self.hp.audio.sampling_rate)
         if len(audio) < self.hp.audio.segment_length + self.hp.audio.pad_short:
-            audio = np.pad(audio, (0, self.hp.audio.segment_length + self.hp.audio.pad_short - len(audio)), \
-                    mode='constant', constant_values=0.0)
+            audio = np.pad(audio, (0, self.hp.audio.segment_length + self.hp.audio.pad_short - len(audio)),
+                           mode='constant', constant_values=0.0)
 
         audio = torch.from_numpy(audio).unsqueeze(0)
-        mel = torch.load(melpath).squeeze(0)
+        # mel = torch.load(melpath).squeeze(0)
+        mel = self.stft.mel_spectrogram(audio).squeeze(0)
 
         if self.train:
             max_mel_start = mel.size(1) - self.mel_segment_length
@@ -61,7 +87,7 @@ class MelFromDisk(Dataset):
             mel = mel[:, mel_start:mel_end]
 
             audio_start = mel_start * self.hp.audio.hop_length
-            audio = audio[:, audio_start:audio_start+self.hp.audio.segment_length]
+            audio = audio[:, audio_start:audio_start + self.hp.audio.segment_length]
 
-        audio = audio + (1/32768) * torch.randn_like(audio)
+        audio = audio + (1 / 32768) * torch.randn_like(audio)
         return mel, audio

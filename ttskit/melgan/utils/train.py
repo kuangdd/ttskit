@@ -7,8 +7,8 @@ import torch.nn.functional as F
 import itertools
 import traceback
 
-from model.generator import Generator
-from model.multiscale import MultiScaleDiscriminator
+from ..model.generator import Generator
+from ..model.multiscale import MultiScaleDiscriminator
 from .utils import get_commit_hash
 from .validation import validate
 
@@ -18,9 +18,11 @@ def train(args, pt_dir, chkpt_path, trainloader, valloader, writer, logger, hp, 
     model_d = MultiScaleDiscriminator().cuda()
 
     optim_g = torch.optim.Adam(model_g.parameters(),
-        lr=hp.train.adam.lr, betas=(hp.train.adam.beta1, hp.train.adam.beta2))
+                               lr=hp.train.adam.lr,
+                               betas=(hp.train.adam.beta1, hp.train.adam.beta2))
     optim_d = torch.optim.Adam(model_d.parameters(),
-        lr=hp.train.adam.lr, betas=(hp.train.adam.beta1, hp.train.adam.beta2))
+                               lr=hp.train.adam.lr,
+                               betas=(hp.train.adam.beta1, hp.train.adam.beta2))
 
     githash = get_commit_hash()
 
@@ -30,13 +32,18 @@ def train(args, pt_dir, chkpt_path, trainloader, valloader, writer, logger, hp, 
     if chkpt_path is not None:
         logger.info("Resuming from checkpoint: %s" % chkpt_path)
         checkpoint = torch.load(chkpt_path)
+
         model_g.load_state_dict(checkpoint['model_g'])
-        model_d.load_state_dict(checkpoint['model_d'])
-        optim_g.load_state_dict(checkpoint['optim_g'])
-        optim_d.load_state_dict(checkpoint['optim_d'])
+        try:
+            model_d.load_state_dict(checkpoint['model_d'])
+            optim_g.load_state_dict(checkpoint['optim_g'])
+            optim_d.load_state_dict(checkpoint['optim_d'])
+        except AttributeError:
+            logger.info('Loaded Generator parameters.')
+
         step = checkpoint['step']
         init_epoch = checkpoint['epoch']
-
+        logger.info(f'Loaded model: step: {step}, epoch: {init_epoch}.')
         if hp_str != checkpoint['hp_str']:
             logger.warning("New hparams is different from checkpoint. Will use new.")
 
@@ -54,13 +61,13 @@ def train(args, pt_dir, chkpt_path, trainloader, valloader, writer, logger, hp, 
     try:
         model_g.train()
         model_d.train()
-        for epoch in itertools.count(init_epoch+1):
+        for epoch in itertools.count(init_epoch + 1):
             if epoch % hp.log.validation_interval == 0:
                 with torch.no_grad():
                     validate(hp, args, model_g, model_d, valloader, writer, step)
 
             trainloader.dataset.shuffle_mapping()
-            loader = tqdm.tqdm(trainloader, desc='Loading train data')
+            loader = tqdm.tqdm(trainloader, desc='Loading train data', ncols=100)
             for (melG, audioG), (melD, audioD) in loader:
                 melG = melG.cuda()
                 audioG = audioG.cuda()
@@ -112,8 +119,7 @@ def train(args, pt_dir, chkpt_path, trainloader, valloader, writer, logger, hp, 
                     loader.set_description("g %.04f d %.04f | step %d" % (loss_g, loss_d_avg, step))
 
             if epoch % hp.log.save_interval == 0:
-                save_path = os.path.join(pt_dir, '%s_%s_%04d.pt'
-                    % (args.name, githash, epoch))
+                save_path = os.path.join(pt_dir, '%s_%s_%04d.pt' % (os.path.basename(args.name), githash, epoch))
                 torch.save({
                     'model_g': model_g.state_dict(),
                     'model_d': model_d.state_dict(),

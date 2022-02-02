@@ -1,11 +1,11 @@
 data: # root path of train/validation data (either relative/absoulte path is ok)
-  train: 'workplace/samples/metadata.csv'
-  validation: 'workplace/samples/metadata.csv'
+  train: 'workplace/samples/metadata.csv'  # 训练数据集路径
+  validation: 'workplace/samples/metadata.csv'  # 评估数据集路径，暂只随机抽取1个batch来评估
 ---
 train:
   rep_discriminator: 1
-  num_workers: 0
-  batch_size: 16
+  num_workers: 5  # 多进程处理数据，可尝试20
+  batch_size: 16  # 根据GPU容量设置，可尝试512
   optimizer: 'adam'
   adam:
     lr: 0.0001
@@ -27,8 +27,8 @@ model:
   feat_match: 10.0
 ---
 log:
-  summary_interval: 1
-  validation_interval: 5
-  save_interval: 25
+  summary_interval: 100  # 每隔100steps记录一次损失
+  validation_interval: 1  # 每隔1epochs评估一次
+  save_interval: 1  # 每隔1epochs保存一次
   chkpt_dir: 'chkpt'
   log_dir: 'logs'
