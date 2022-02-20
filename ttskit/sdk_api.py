@@ -438,11 +438,11 @@ def tts_sdk(text, **kwargs):
     tc = t1 - t0
     ad = len(wav) / (2 * sr)
     rtf = (t1 - t0) / (len(wav) / (2 * sr))
-    cps = len(text) / (t1 - t0)
+    fps = len(text) / (t1 - t0)
 
     logger.info(
         f'processes: {processes}, cuda: {torch.cuda.is_available()}, device: {os.environ.get("CUDA_VISIBLE_DEVICES")}, '
-        f'time consumed: {tc:.2f}s, text length: {len(text)}, audio duration: {ad:.2f}s, RTF: {rtf:.4f}, CPS: {cps:.4f}')
+        f'time consumed: {tc:.2f}s, text length: {len(text)}, audio duration: {ad:.2f}s, RTF: {rtf:.4f}, FPS: {fps:.4f}')
     return wav
 
 

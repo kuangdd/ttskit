@@ -16,6 +16,10 @@ pip install -U ttskit
     * 自行设置环境变量CUDA_VISIBLE_DEVICES以调用GPU，如果不设置，则默认调用0号GPU，没有GPU则使用CPU。
     * 默认用mspk模式的多发音人的语音合成模型，griffinlim声码器。
 
+### 语音合成Demo网页
+
+http://119.91.208.249:9000/ttskit
+
 ### 资源
 使用ttskit的过程中会自动下载模型和语音资源。
 
